@@ -40,5 +40,5 @@ jobs:
       - name: Set Up Production
         run: |
           cd Raft2.0
-          docker compose down --remove-orphans
+          
           docker compose up -d --build
