@@ -1,16 +1,16 @@
 name: Pushing Raft stuff
-run-name: ${{ github.actor }} is pushing a new version of the chat app 🚀
+run-name: ${{ github.actor }} is pushing a new version of the raft simulation
 on: [push, workflow_dispatch]
 
 env:
   DOTNET_CORE_VERSION: 8.0.102
   CONFIGURATION: Release
   # API_WORKING_DIRECTORY: ChatApp-API
-  # POSTGRES_USER: ${{secrets.POSTGRES_USER}}
-  # POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-  # DBCONNECTION: ${{secrets.DBCONNECTION}}
-  # APIBASEURL: ${{secrets.APIBASEURL}}
-  # DUCKDNSTOKEN: ${{secrets.DUCKDNSTOKEN}}
+  # POSTGRES_USER: {{secrets.POSTGRES_USER}}
+  # POSTGRES_PASSWORD: {{secrets.POSTGRES_PASSWORD}}
+  # DBCONNECTION: {{secrets.DBCONNECTION}}
+  # APIBASEURL: {{secrets.APIBASEURL}}
+  # DUCKDNSTOKEN: {{secrets.DUCKDNSTOKEN}}
 
 jobs:
   Deploy:
@@ -39,5 +39,6 @@ jobs:
 
       - name: Set Up Production
         run: |
-
+          cd Raft2.0
+          docker compose down --remove-orphans
           docker compose up -d --build
