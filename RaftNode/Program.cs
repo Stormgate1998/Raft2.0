@@ -1,5 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
+
+
+int myNode = int.Parse(builder.Configuration.GetSection("SERVER_NAME").Value ?? "0");
+string list = builder.Configuration.GetSection("LIST_OF_NODES").Value ?? "";
+List<string> nodes = list.Split(',').ToList();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -14,24 +19,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/listofnodes", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return nodes;
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();

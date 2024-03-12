@@ -1,6 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\GateWay"
   ],
+  "SelectedNode": "\\RaftDistributed.sln",
   "PreviewInSolutionExplorer": false
 }
