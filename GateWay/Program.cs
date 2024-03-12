@@ -1,18 +1,37 @@
+using GateWay.Controllers;
+using GateWay.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+string list = builder.Configuration.GetSection("LIST_OF_NODES").Value ?? "";
+List<string> nodes = [.. list.Split(',')];
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers();
+
+builder.Services.AddScoped<Gateway>(x =>
+{
+    return new Gateway(nodes);
+});
+
+builder.Services.AddScoped<GatewayController>(provider =>
+{
+    return new GatewayController(provider.GetRequiredService<Gateway>());
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // app.UseHttpsRedirection();
 
@@ -35,6 +54,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+
+app.MapControllers();
 
 app.Run();
 

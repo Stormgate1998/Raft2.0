@@ -14,9 +14,39 @@ services:
       dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
     environment:
       SERVER_NAME: "1"
-      LIST_OF_NODES: "josh-node-1,josh-node-2,josh-node-3"
+      LIST_OF_NODES: "1,2,3"
     ports:
       - "2320:8080"
+    networks:
+      - monitoring
+
+  josh-node-2:
+    container_name: "josh-node-2"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
+    environment:
+      SERVER_NAME: "2"
+      LIST_OF_NODES: "1,2,3"
+    ports:
+      - "2321:8080"
+    networks:
+      - monitoring
+
+  josh-node-3:
+    container_name: "josh-node-3"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
+    environment:
+      SERVER_NAME: "1"
+      LIST_OF_NODES: "1,2,3"
+    ports:
+      - "2322:8080"
     networks:
       - monitoring
 
@@ -28,7 +58,7 @@ services:
       context: ..
       dockerfile: ./RaftDistributed/GateWay/Dockerfile  
     environment:
-      LIST_OF_NODES: "josh-node-1,josh-node-2,josh-node-3"
+      LIST_OF_NODES: "1,2,3"
     ports:
       - "2319:8080"
     networks:

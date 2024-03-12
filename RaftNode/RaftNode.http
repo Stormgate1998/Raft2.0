@@ -1,21 +1,17 @@
 @RaftNode_HostAddress = http://localhost:2320
 
-GET {{RaftNode_HostAddress}}/listofnodes/
+GET {{RaftNode_HostAddress}}/Node/GetOtherId/2
 Accept: application/json
 
 ###
 #Next steps:
 # 1. In node:
-    #set up service with passed-in variables
-    #make api calls that return both variables
+   
 # 2. In gateway:
-    # set up api call to call 1 node to call another
-    # set up api call to get 1 node
 # 3 In both:
     # figure out all relevant functions that may be called
     # make skeleton functions for all of them
 # 4 Outside both:
-    # Add 2 more nodes
     #Look at rubric
     # Add prometheus/grafana stuff
     # etc
