@@ -13,7 +13,7 @@ env:
   # DUCKDNSTOKEN: ${{secrets.DUCKDNSTOKEN}}
 
 jobs:
-  Test-Then-Deploy:
+  Deploy:
     runs-on: self-hosted
     steps:
       - name: Check out repository code
@@ -39,5 +39,5 @@ jobs:
 
       - name: Set Up Production
         run: |
-          docker compose down --remove-orphans
+
           docker compose up -d --build
