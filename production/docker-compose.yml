@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ../RaftDistributed/RaftNode/Dockerfile  
+      dockerfile: ../RaftNode/Dockerfile  
     environment:
       SERVER_NAME: "1"
       LIST_OF_NODES: "1,2,3"
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ../RaftDistributed/RaftNode/Dockerfile  
+      dockerfile: ../RaftNode/Dockerfile  
     environment:
       SERVER_NAME: "2"
       LIST_OF_NODES: "1,2,3"
