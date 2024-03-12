@@ -1,4 +1,4 @@
-namespace GateWay.Services
+﻿namespace GateWay.Services
 {
 
     public class Gateway(List<string> nodes)

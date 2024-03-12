@@ -1,0 +1,43 @@
+name: Pushing Raft stuff
+run-name: ${{ github.actor }} is pushing a new version of the chat app 🚀
+on: [push, workflow_dispatch]
+
+env:
+  DOTNET_CORE_VERSION: 8.0.102
+  CONFIGURATION: Release
+  # API_WORKING_DIRECTORY: ChatApp-API
+  # POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+  # POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+  # DBCONNECTION: ${{secrets.DBCONNECTION}}
+  # APIBASEURL: ${{secrets.APIBASEURL}}
+  # DUCKDNSTOKEN: ${{secrets.DUCKDNSTOKEN}}
+
+jobs:
+  Test-Then-Deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+      # - name: Set up Tests
+      #   run: |
+      #     cd TestFolder
+      #     docker compose up -d --build
+      #     sleep 5
+      #     docker compose exec -T api dotnet test
+
+      # - name: Clean up Tests
+      #   f: always()
+      #   run: |
+      #     cd TestFolder
+      #     docker compose down --remove-orphans --volumes
+      - name: Ensure Formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+      - name: Set Up Production
+        run: |
+          docker compose down --remove-orphans
+          docker compose up -d --build

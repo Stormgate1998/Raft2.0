@@ -1,4 +1,4 @@
-namespace RaftNode.Services
+﻿namespace RaftNode.Services
 {
 
     public class Node(string id, List<string> nodes)

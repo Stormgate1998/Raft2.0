@@ -1,5 +1,5 @@
+﻿using GateWay.Services;
 using Microsoft.AspNetCore.Mvc;
-using GateWay.Services;
 namespace GateWay.Controllers;
 
 [ApiController]
