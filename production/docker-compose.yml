@@ -49,7 +49,7 @@ services:
       - "2322:8080"
     networks:
       - monitoring
-
+       
   gateway:
     container_name: "josh-gateway"    
     user: 0:0
