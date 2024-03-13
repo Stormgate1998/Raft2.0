@@ -76,7 +76,7 @@ namespace RaftTests
         public void TestReturnList()
         {
             var list = gateway.ReturnList();
-            List<string> TestList = ["1", "2", "3"];
+            var TestList = nodes;
             Assert.That(list, Is.EqualTo(TestList));
         }
     }
