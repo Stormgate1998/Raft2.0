@@ -1,9 +1,9 @@
 ﻿namespace GateWay.Services
 {
 
-    public class Gateway(List<string> nodes, ILogger<Gateway> logger, bool isTesting = false)
+    public class Gateway(Dictionary<int, string> nodes, ILogger<Gateway> logger, bool isTesting = false)
     {
-        List<string> nodes = nodes;
+        Dictionary<int, string> nodes = nodes;
         private readonly ILogger<Gateway> logger = logger;
 
 
@@ -12,7 +12,7 @@
             HttpClient client;
             if (!isTesting)
             {
-                client = new() { BaseAddress = new Uri($"http://josh-node-{id}:8080") };
+                client = new() { BaseAddress = new Uri(nodes[int.Parse(id)]) };
             }
             else
             {
@@ -28,7 +28,7 @@
             HttpClient client;
             if (!isTesting)
             {
-                client = new() { BaseAddress = new Uri($"http://josh-node-{firstNode}:8080") };
+                client = new() { BaseAddress = new Uri(nodes[int.Parse(firstNode)]) };
             }
             else
             {
@@ -39,7 +39,7 @@
             return response.ToString();
         }
 
-        public List<string> ReturnList()
+        public Dictionary<int, string> ReturnList()
         {
             return nodes;
         }

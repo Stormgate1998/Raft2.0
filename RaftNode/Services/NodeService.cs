@@ -1,9 +1,9 @@
 ﻿namespace RaftNode.Services
 {
 
-    public class Node(string id, List<string> nodes)
+    public class Node(string id, Dictionary<int, string> nodes)
     {
-        List<string> nodes = nodes;
+        Dictionary<int, string> nodes = nodes;
         readonly string id = id;
 
 
@@ -14,13 +14,13 @@
 
         public async Task<string> ReturnOtherId(string otherId)
         {
-            HttpClient client = new() { BaseAddress = new Uri($"http://josh-node-{otherId}:8080") };
+            HttpClient client = new() { BaseAddress = new Uri(nodes[int.Parse(otherId)]) };
             var response = await client.GetFromJsonAsync<int>($"Node/GetId");
 
             return response.ToString();
         }
 
-        public List<string> ReturnList()
+        public Dictionary<int, string> ReturnList()
         {
             return nodes;
         }

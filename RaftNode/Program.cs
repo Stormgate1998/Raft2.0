@@ -6,7 +6,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 string myNode = builder.Configuration.GetSection("SERVER_NAME").Value ?? "0";
 string list = builder.Configuration.GetSection("LIST_OF_NODES").Value ?? "";
-List<string> nodes = [.. list.Split(',')];
+
+string[] pairs = list.Split(';');
+
+// Dictionary to store key-value pairs
+Dictionary<int, string> keyValuePairs = new Dictionary<int, string>();
+
+foreach (string pair in pairs)
+{
+    // Split each pair by equal sign to separate key and value
+    string[] parts = pair.Split('=');
+    if (parts.Length == 2)
+    {
+        // Parse key and add to dictionary
+        int key;
+        if (int.TryParse(parts[0], out key))
+        {
+            // Add key-value pair to dictionary
+            keyValuePairs.Add(key, parts[1]);
+        }
+    }
+}
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -16,7 +36,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<Node>(x =>
 {
-    return new Node(myNode, nodes);
+    return new Node(myNode, keyValuePairs);
 });
 
 builder.Services.AddScoped<NodeController>(provider =>
@@ -38,7 +58,7 @@ app.UseSwaggerUI();
 
 app.MapGet("/listofnodes", () =>
 {
-    return nodes;
+    return keyValuePairs;
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();

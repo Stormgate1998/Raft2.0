@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  josh-node-3:
+    container_name: "josh-node-3"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: RaftNode/production/Dockerfile  
+    environment:
+      SERVER_NAME: "3"
+      LIST_OF_NODES: "1=144.17.92.12:2320;2=144.17.92.12:2321;"
+    ports:
+      - "2322:8080"
+    networks:
+      - monitoring

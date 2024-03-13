@@ -8,7 +8,27 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 string list = builder.Configuration.GetSection("LIST_OF_NODES").Value ?? "";
-List<string> nodes = [.. list.Split(',')];
+
+string[] pairs = list.Split(';');
+
+// Dictionary to store key-value pairs
+Dictionary<int, string> keyValuePairs = new Dictionary<int, string>();
+
+foreach (string pair in pairs)
+{
+    // Split each pair by equal sign to separate key and value
+    string[] parts = pair.Split('=');
+    if (parts.Length == 2)
+    {
+        // Parse key and add to dictionary
+        int key;
+        if (int.TryParse(parts[0], out key))
+        {
+            // Add key-value pair to dictionary
+            keyValuePairs.Add(key, parts[1]);
+        }
+    }
+}
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -35,7 +55,7 @@ builder.Services.AddScoped<Gateway>(x =>
 {
     var logger = x.GetRequiredService<ILogger<Gateway>>();
 
-    return new Gateway(nodes, logger);
+    return new Gateway(keyValuePairs, logger);
 });
 
 builder.Services.AddScoped<GatewayController>(provider =>

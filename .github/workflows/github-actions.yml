@@ -13,8 +13,8 @@ env:
   # DUCKDNSTOKEN: {{secrets.DUCKDNSTOKEN}}
 
 jobs:
-  Deploy:
-    runs-on: self-hosted
+  DeployToServer2:
+    runs-on: office-2
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -41,5 +41,19 @@ jobs:
       - name: Set Up Production
         run: |
           cd production
-          
+          docker compose up -d --build
+
+  DeployToServer3:
+    runs-on: office-3
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+
+      - name: Set Up Production
+        run: |
+          cd productionServer2
           docker compose up -d --build

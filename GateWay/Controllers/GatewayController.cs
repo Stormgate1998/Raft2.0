@@ -28,7 +28,7 @@ public class GatewayController : Controller
     }
 
     [HttpGet("GetNodeList")]
-    public List<string> GetNodeList()
+    public Dictionary<int, string> GetNodeList()
     {
         return gateway.ReturnList();
     }

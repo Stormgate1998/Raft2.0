@@ -8,6 +8,9 @@ networks:
 volumes:
   grafana_storage: {}
 
+environment:
+
+
 services:
   josh-node-1:
     container_name: "josh-node-1"    
@@ -18,7 +21,7 @@ services:
       dockerfile: RaftNode/production/Dockerfile    
     environment:
       SERVER_NAME: "1"
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "2=http://josh-node-2:8080;3=144.17.92.13:2322"
     ports:
       - "2320:8080"
     networks:
@@ -33,24 +36,9 @@ services:
       dockerfile: RaftNode/production/Dockerfile   
     environment:
       SERVER_NAME: "2"
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;3=144.17.92.13:2322"
     ports:
       - "2321:8080"
-    networks:
-      - monitoring
-
-  josh-node-3:
-    container_name: "josh-node-3"    
-    user: 0:0
-    restart: unless-stopped
-    build: 
-      context: ..
-      dockerfile: RaftNode/production/Dockerfile  
-    environment:
-      SERVER_NAME: "3"
-      LIST_OF_NODES: "1,2,3"
-    ports:
-      - "2322:8080"
     networks:
       - monitoring
        
@@ -62,7 +50,7 @@ services:
       context: ..
       dockerfile: GateWay/production/Dockerfile  
     environment:
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=144.17.92.13:2322"
     ports:
       - "2319:8080"
     networks:
