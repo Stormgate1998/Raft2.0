@@ -14,5 +14,3 @@ services:
       LIST_OF_NODES: "1=144.17.92.12:2320;2=144.17.92.12:2321;"
     ports:
       - "2322:8080"
-    networks:
-      - monitoring

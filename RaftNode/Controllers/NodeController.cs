@@ -27,7 +27,7 @@ public class NodeController : Controller
     }
 
     [HttpGet("GetNodeList")]
-    public List<string> GetNodeList()
+    public Dictionary<int, string> GetNodeList()
     {
         return node.ReturnList();
     }
