@@ -11,7 +11,7 @@ string list = builder.Configuration.GetSection("LIST_OF_NODES").Value ?? "";
 
 string[] pairs = list.Split(';');
 
-// Dictionary to store key-value pairs
+// Dictionary  to store key-value pairs
 Dictionary<int, string> keyValuePairs = new Dictionary<int, string>();
 
 foreach (string pair in pairs)
