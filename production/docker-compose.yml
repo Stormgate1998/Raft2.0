@@ -8,8 +8,6 @@ networks:
 volumes:
   grafana_storage: {}
 
-environment:
-
 
 services:
   josh-node-1:
