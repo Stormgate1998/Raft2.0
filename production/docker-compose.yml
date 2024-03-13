@@ -43,7 +43,7 @@ services:
       context: ..
       dockerfile: RaftNode/production/Dockerfile  
     environment:
-      SERVER_NAME: "1"
+      SERVER_NAME: "3"
       LIST_OF_NODES: "1,2,3"
     ports:
       - "2322:8080"
