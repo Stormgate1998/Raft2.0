@@ -22,7 +22,7 @@ services:
       SERVER_NAME: "1"
       LIST_OF_NODES: "1,2,3"
     ports:
-      - "2320:8080"
+      - "2324:8080"
 
   josh-node-2:
     container_name: "josh-test-node-2"    
@@ -35,7 +35,7 @@ services:
       SERVER_NAME: "2"
       LIST_OF_NODES: "1,2,3"
     ports:
-      - "2321:8080"
+      - "2325:8080"
 
   josh-node-3:
     container_name: "josh-test-node-3"    
@@ -48,4 +48,4 @@ services:
       SERVER_NAME: "1"
       LIST_OF_NODES: "1,2,3"
     ports:
-      - "2322:8080"
+      - "2326:8080"
