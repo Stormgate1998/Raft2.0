@@ -8,8 +8,6 @@ services:
     command: tail -f /dev/null
     environment:
       - IMAGE_API_URL= "http://jztestimageapi:8081"
-    volumes:
-    - ./Images/test.png:/app/Images
 
   josh-node-1:
     container_name: "josh-test-node-1"    
