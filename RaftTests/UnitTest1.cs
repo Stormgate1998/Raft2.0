@@ -26,7 +26,7 @@ namespace RaftTests
             ILogger<Gateway> logger = loggerMock.Object;
 
             nodes = ["1", "2", "3"];
-            gateway = new Gateway(nodes, logger);
+            gateway = new Gateway(nodes, logger, true);
         }
 
         [Test]

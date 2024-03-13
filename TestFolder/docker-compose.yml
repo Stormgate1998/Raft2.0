@@ -12,7 +12,7 @@ services:
     - ./Images/test.png:/app/Images
 
   josh-node-1:
-    container_name: "josh-node-1"    
+    container_name: "josh-test-node-1"    
     user: 0:0
     restart: unless-stopped
     build: 
@@ -25,7 +25,7 @@ services:
       - "2320:8080"
 
   josh-node-2:
-    container_name: "josh-node-2"    
+    container_name: "josh-test-node-2"    
     user: 0:0
     restart: unless-stopped
     build: 
@@ -38,7 +38,7 @@ services:
       - "2321:8080"
 
   josh-node-3:
-    container_name: "josh-node-3"    
+    container_name: "josh-test-node-3"    
     user: 0:0
     restart: unless-stopped
     build: 
