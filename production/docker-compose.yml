@@ -109,7 +109,7 @@ services:
       - GF_SECURITY_ADMIN_USER=josh
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     depends_on:
-      - jz-loki
+      - josh-loki
     volumes:
       - grafana_storage:/var/lib/grafana
     networks:
