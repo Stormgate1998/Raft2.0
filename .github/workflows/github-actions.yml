@@ -22,22 +22,24 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-      # - name: Set up Tests
-      #   run: |
-      #     cd TestFolder
-      #     docker compose up -d --build
-      #     sleep 5
-      #     docker compose exec -T api dotnet test
+      - name: Set up Tests
+        run: |
+          cd TestFolder
+          docker compose up -d --build
+          sleep 5
+          docker compose exec -T josh-testing dotnet test
 
-      # - name: Clean up Tests
-      #   f: always()
-      #   run: |
-      #     cd TestFolder
-      #     docker compose down --remove-orphans --volumes
+      - name: Clean up Tests
+        if: always()
+        run: |
+          cd TestFolder
+          docker compose down --remove-orphans --volumes
+
       - name: Ensure Formatting
         run: dotnet format --verify-no-changes --verbosity diagnostic
 
       - name: Set Up Production
         run: |
           cd production
+          docker compose down --remove-orphans
           docker compose up -d --build

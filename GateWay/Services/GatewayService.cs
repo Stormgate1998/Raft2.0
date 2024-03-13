@@ -1,9 +1,10 @@
 ﻿namespace GateWay.Services
 {
 
-    public class Gateway(List<string> nodes)
+    public class Gateway(List<string> nodes, ILogger<Gateway> logger)
     {
         List<string> nodes = nodes;
+        private readonly ILogger<Gateway> logger = logger;
 
 
         public async Task<string> ReturnIdOfNodeAsync(string id)

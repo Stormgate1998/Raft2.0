@@ -1,0 +1,51 @@
+version: '3'
+services:
+  josh-testing:
+    container_name: joshtestContainer
+    build: 
+        context: ..
+        dockerfile: ./GateWay/Test.Dockerfile
+    command: tail -f /dev/null
+    environment:
+      - IMAGE_API_URL= "http://jztestimageapi:8081"
+    volumes:
+    - ./Images/test.png:/app/Images
+
+  josh-node-1:
+    container_name: "josh-node-1"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: RaftNode/production/Dockerfile    
+    environment:
+      SERVER_NAME: "1"
+      LIST_OF_NODES: "1,2,3"
+    ports:
+      - "2320:8080"
+
+  josh-node-2:
+    container_name: "josh-node-2"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: RaftNode/production/Dockerfile   
+    environment:
+      SERVER_NAME: "2"
+      LIST_OF_NODES: "1,2,3"
+    ports:
+      - "2321:8080"
+
+  josh-node-3:
+    container_name: "josh-node-3"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: RaftNode/production/Dockerfile  
+    environment:
+      SERVER_NAME: "1"
+      LIST_OF_NODES: "1,2,3"
+    ports:
+      - "2322:8080"

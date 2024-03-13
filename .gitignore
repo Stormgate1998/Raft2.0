@@ -1,3 +1,11 @@
 .vs/RaftDistributed/FileContentIndex/*.vsidx
 */obj/*
 .vs/RaftDistributed/v17/.wsuo
+*/bin/*
+GateWay/bin/Debug/net8.0/GateWay.deps.json
+GateWay/bin/Debug/net8.0/GateWay.dll
+GateWay/bin/Debug/net8.0/GateWay.exe
+GateWay/bin/Debug/net8.0/GateWay.pdb
+.vs/RaftDistributed/DesignTimeBuild/.dtbcache.v2
+.vs/slnx.sqlite
+.vs/RaftDistributed/v17/.suo

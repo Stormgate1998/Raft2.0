@@ -1,5 +1,7 @@
 ﻿using GateWay.Controllers;
 using GateWay.Services;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,15 +15,35 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
+
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options.SetResourceBuilder(
+        ResourceBuilder
+            .CreateDefault()
+            .AddService("GateWay-Logs")
+        )
+        .AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://jz-otel-collector:4317");
+        }).AddConsoleExporter();
+});
+
+
+
 builder.Services.AddScoped<Gateway>(x =>
 {
-    return new Gateway(nodes);
+    var logger = x.GetRequiredService<ILogger<Gateway>>();
+
+    return new Gateway(nodes, logger);
 });
 
 builder.Services.AddScoped<GatewayController>(provider =>
 {
     return new GatewayController(provider.GetRequiredService<Gateway>());
 });
+
+
 
 var app = builder.Build();
 

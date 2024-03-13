@@ -63,3 +63,66 @@ services:
       - "2319:8080"
     networks:
       - monitoring
+
+  josh-otel-collector:
+    container_name: "josh-otel-collector"
+    image: otel/opentelemetry-collector-contrib
+    restart: unless-stopped
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1369:1888 # pprof extension
+      - 1370:8888 # Prometheus metrics exposed by the Collector
+      - 1371:8889 # Prometheus exporter metrics
+      - 1372:13133 # health_check extension
+      - 1373:4317 # OTLP gRPC receiver
+      - 1374:4318 # OTLP http receiver
+      - 1375:55679 # zpages extension
+    networks:
+      - monitoring
+
+  josh-node-exporter:
+    container_name: "josh-node-exporter"
+    image: prom/node-exporter:latest
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "1376:9100"
+    networks:
+      - monitoring
+
+  josh-grafana:
+    container_name: "josh-grafana"
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "1379:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=josh
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    depends_on:
+      - jz-loki
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    networks:
+      - monitoring
+
+  josh-loki:
+    container_name: "josh-loki"
+    image: grafana/loki:latest    
+    restart: unless-stopped
+    ports: 
+      - "1380:3100"
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+    networks:
+      - monitoring
