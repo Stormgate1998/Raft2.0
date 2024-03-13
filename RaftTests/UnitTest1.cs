@@ -6,7 +6,7 @@ namespace RaftTests
 {
     public class Tests
     {
-        public List<string> nodes { get; set; }
+        public Dictionary<int, string> nodes { get; set; }
         public Gateway gateway { get; set; }
 
         private static void Test3AtOnce(string one, string two, string three)
@@ -25,8 +25,30 @@ namespace RaftTests
             var loggerMock = new Mock<ILogger<Gateway>>();
             ILogger<Gateway> logger = loggerMock.Object;
 
-            nodes = ["1", "2", "3"];
-            gateway = new Gateway(nodes, logger, true);
+            string list = "1=http://josh-test-node-1:8080;2=http://josh-test-node-2:8080;3=http://josh-test-node-3:8080";
+
+            string[] pairs = list.Split(';');
+
+            // Dictionary to store key-value pairs
+            Dictionary<int, string> keyValuePairs = new Dictionary<int, string>();
+
+            foreach (string pair in pairs)
+            {
+                // Split each pair by equal sign to separate key and value
+                string[] parts = pair.Split('=');
+                if (parts.Length == 2)
+                {
+                    // Parse key and add to dictionary
+                    int key;
+                    if (int.TryParse(parts[0], out key))
+                    {
+                        // Add key-value pair to dictionary
+                        keyValuePairs.Add(key, parts[1]);
+                    }
+                }
+            }
+            nodes = keyValuePairs;
+            gateway = new Gateway(nodes, logger);
         }
 
         [Test]
