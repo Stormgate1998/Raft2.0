@@ -4,7 +4,7 @@ networks:
   monitoring:
     driver: bridge
 
-    
+
 volumes:
   grafana_storage: {}
 
@@ -125,8 +125,8 @@ services:
     restart: unless-stopped
     ports: 
       - "1380:3100"
-    command: -config.file=/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki-config.yaml
     volumes:
-      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./loki-config.yaml:/etc/loki-config.yaml
     networks:
       - monitoring
