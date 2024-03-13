@@ -4,6 +4,10 @@ networks:
   monitoring:
     driver: bridge
 
+    
+volumes:
+  grafana_storage: {}
+
 services:
   josh-node-1:
     container_name: "josh-node-1"    
