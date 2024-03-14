@@ -27,7 +27,7 @@ foreach (string pair in pairs)
             // Add key-value pair to dictionary
             keyValuePairs.Add(key, parts[1]);
         }
-    } 
+    }
 }
 
 builder.Services.AddEndpointsApiExplorer();
