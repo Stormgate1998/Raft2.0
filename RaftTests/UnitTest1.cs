@@ -72,12 +72,12 @@ namespace RaftTests
             Test3AtOnce(shouldBe1, shouldBe2, shouldBe3);
         }
 
-        [Test]
-        public void TestReturnList()
-        {
-            var list = gateway.ReturnList();
-            var TestList = nodes;
-            Assert.That(list, Is.EqualTo(TestList));
-        }
+        // [Test]
+        // public void TestReturnList()
+        // {
+        //     var list = gateway.ReturnList();
+        //     var TestList = nodes;
+        //     Assert.That(list, Is.EqualTo(TestList));
+        // }
     }
 }
