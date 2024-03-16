@@ -69,6 +69,9 @@ namespace RaftTests
             string shouldBe1 = await gateway.ReturnIdFromSecondNode("2", "1");
             string shouldBe2 = await gateway.ReturnIdFromSecondNode("3", "2");
             string shouldBe3 = await gateway.ReturnIdFromSecondNode("1", "3");
+            Console.WriteLine(shouldBe1);
+            Console.WriteLine(shouldBe2);
+            Console.WriteLine(shouldBe3);
             Test3AtOnce(shouldBe1, shouldBe2, shouldBe3);
         }
 
