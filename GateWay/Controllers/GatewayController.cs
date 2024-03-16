@@ -23,12 +23,17 @@ public class GatewayController : Controller
     [HttpGet("GetLeader")]
     public async Task<string> GetLeader()
     {
-        if (await gateway.IsLeaderValid())
+        bool valid = await gateway.IsLeaderValid();
+        Console.WriteLine(valid);
+        if (valid)
         {
+            Console.WriteLine("Leader is valid");
             return gateway.Leader;
         }
         else
         {
+            Console.WriteLine("Finding Leader");
+
             await gateway.FindLeader();
             return gateway.Leader;
         }
@@ -47,21 +52,21 @@ public class GatewayController : Controller
         return gateway.ReturnList();
     }
 
-    [HttpPost("AddToLog/{key}/{value}")]
-    public async Task AddToLog(string key, string value)
+    [HttpPost("AddToLog")]
+    public async Task AddToLog(LogObject logObject)
     {
-        await gateway.AddToLog(key, value);
+        await gateway.AddToLog(logObject.key, logObject.value);
     }
 
     [HttpGet("StrongGet/{key}")]
-    public async Task<string?> StrongGetAsync(string key)
+    public async Task<Item> StrongGetAsync(string key)
     {
         return await gateway.StrongGet(key);
     }
 
 
     [HttpGet("EventualGet/{key}")]
-    public async Task<string?> EventualGetAsync(string key)
+    public async Task<Item> EventualGetAsync(string key)
     {
         return await gateway.EventualGet(key);
     }
@@ -72,4 +77,3 @@ public class GatewayController : Controller
         return await gateway.CompareVersionAndSwap(key, newValue, expectedVersion);
     }
 }
-

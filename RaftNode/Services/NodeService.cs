@@ -2,6 +2,18 @@
 
 namespace RaftNode.Services
 {
+    public class LogObject
+    {
+        public LogObject(string key, string value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+
+        public string key { get; set; }
+        public string value { get; set; }
+
+    }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public class NodeService
@@ -13,7 +25,13 @@ namespace RaftNode.Services
         {
             Identifier = id;
             List = nodes;
-            LogFileName = id + "LeaderInformation.txt";
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
+            string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
+
+            LogFileName = Path.Combine(modifiedParentDirectory, "app", $"{id}LeaderInformation.txt");
+
+
 
             string current;
             int term;
@@ -29,7 +47,6 @@ namespace RaftNode.Services
 
             HeartbeatTimer.Elapsed += SendHeartbeats;
             ElectionCountdownTimer.AutoReset = true;
-            List = [];
             ElectionCountdownTimer.Elapsed += BecomeLeader;
             HeartbeatTimer.Enabled = true;
             ElectionCountdownTimer.Enabled = true;
@@ -49,14 +66,13 @@ namespace RaftNode.Services
                 CurrentRole = Role.FOLLOWER;
                 currentLeader = leader;
             }
-            ReadInLogFile();
+            // ReadInLogFile();
         }
 
         Dictionary<int, string> List { get; set; }
         public string Identifier { get; set; }
 
         public Role CurrentRole { get; set; }
-
         public string currentLeader { get; set; }
 
         private Dictionary<string, (string, int)> keyValueLog = [];
@@ -98,6 +114,7 @@ namespace RaftNode.Services
         }
         private static (int, string, string) ReadNumbersFromFile(string filePath)
         {
+
             lock (fileLock)
             {
                 if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath) || new FileInfo(filePath).Length == 0)
@@ -189,13 +206,10 @@ namespace RaftNode.Services
             {
                 WriteNumbersToFile(term, votedFor);
             }
-            if (CurrentRole == Role.CANDIDATE)
-            {
-                CurrentRole = Role.FOLLOWER;
-
-            }
+            CurrentRole = Role.FOLLOWER;
 
             ElectionCountdownTimer.Stop();
+            HeartbeatTimer.Stop();
             ElectionCountdownTimer.Start();
             return true;
         }
@@ -230,15 +244,14 @@ namespace RaftNode.Services
             Console.WriteLine($"Beginning election with {Identifier} as candidate");
 
             ElectionCountdownTimer.Stop();
-            while (List.Count == 0)
-            {
-                Thread.Sleep(100);
-            }
+
             var (term, _, _) = ReadNumbersFromFile(LogFileName);
             term += 1;
             if (UsedTerm != -1)
             {
                 term = UsedTerm;
+                Console.WriteLine($"Term is {term}");
+
             }
             WriteNumbersToFile(term, Identifier);
 
@@ -247,9 +260,12 @@ namespace RaftNode.Services
             {
                 if (node.Key.ToString() != Identifier)
                 {
+                    Console.WriteLine($"Sending request to {node.Key}, url {node.Value}");
+
                     HttpClient client = clientMaker(node.Key.ToString());
                     bool? result = await client.GetFromJsonAsync<bool>($"Node/ProcessVoteRequest/{Identifier}/{term}");
-                    //request for this too bool? result = node.ProcessVoteRequest(Identifier, term);
+                    Console.WriteLine($"got result of {result} from {node.Key}");
+
                     if (result != null && result != false)
                     {
                         voteCount++;
@@ -292,16 +308,18 @@ namespace RaftNode.Services
 
 
 
-        public string? EventualGet(string key)
+        public (string, int) EventualGet(string key)
         {
             // Return the latest value from the log
             if (keyValueLog.TryGetValue(key, out (string, int) value))
             {
-                return value.Item1;
+                var item = (value.Item1, value.Item2);
+                Console.WriteLine(item);
+                return item;
             }
             else
             {
-                return null; // Key not found
+                return ("", 0); // Key not found
             }
         }
 
@@ -341,7 +359,7 @@ namespace RaftNode.Services
                 return false; // Key not found
             }
         }
-        public async Task<string?> StrongGet(string key)
+        public async Task<(string, int)> StrongGet(string key)
         {
             // Check if this node is the current leader
             if (CurrentRole == Role.LEADER)
@@ -349,10 +367,12 @@ namespace RaftNode.Services
                 bool result = await ActuallyLeader();
                 if (result)
                 {
-                    return EventualGet(key);
+                    var item = EventualGet(key);
+                    Console.WriteLine(item);
+                    return item;
                 }
             }
-            return null;
+            return ("", 0);
         }
 
         public async Task<bool> ActuallyLeader()
@@ -385,74 +405,102 @@ namespace RaftNode.Services
             return false;
         }
 
-        public void AddToLogAsLeaderAsync(string key, string value)
+        public async Task AddToLogAsLeaderAsync(string key, string value)
         {//DO THIS
+            Console.WriteLine($"Adding value {value} to {key}");
             keyValueLog[key] = (value, keyValueLog.Values.Count() + 1);
-            CreateLogFile();
-        }
-        private void CreateLogFile()
-        {
-            string filePath = $"InfoStorage{Identifier}.txt";
-            if (!File.Exists(filePath))
-            {
-                File.Create(filePath).Close();
-            }
-            else
-            {
-                // Clear file contents
-                File.WriteAllText(filePath, string.Empty);
-            }
 
-            using (StreamWriter writer = new StreamWriter(filePath))
+            foreach (var item in List)
             {
-
-                var sortedDict = keyValueLog.OrderBy(kv => kv.Value.Item2);
-
-                foreach (var kvp in sortedDict)
+                if (item.Key.ToString() != Identifier)
                 {
-                    // Format: key, value1
-                    string line = $"{kvp.Key},{kvp.Value.Item1}";
-                    writer.WriteLine(line);
+                    HttpClient client = clientMaker(item.Key.ToString());
+                    await client.PostAsync($"Node/AddToLogFollower/{key}/{value}/{keyValueLog.Values.Count() + 1}", null);
                 }
             }
+            // CreateLogFile();
         }
-        private void ReadInLogFile()
-        {
-            string filePath = $"InfoStorage{Identifier}.txt";
-            Dictionary<string, (string, int)> dictionary = new Dictionary<string, (string, int)>();
+        // private void CreateLogFile()
+        // {
+        //     string currentDirectory = Directory.GetCurrentDirectory();
+        //     string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
+        //     string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
 
-            // Check if the file exists
-            if (File.Exists(filePath))
-            {
-                // Read each line from the file
-                int lineNum = 1;
-                foreach (string line in File.ReadLines(filePath))
-                {
-                    // Split the line by comma
-                    string[] parts = line.Split(',');
+        //     string filePath = Path.Combine(modifiedParentDirectory, $"{Identifier}Info.txt");
+        //     if (!File.Exists(filePath))
+        //     {
+        //         File.Create(filePath).Close();
+        //     }
+        //     else
+        //     {
+        //         // Clear file contents
+        //         File.WriteAllText(filePath, string.Empty);
+        //     }
 
-                    if (parts.Length == 3)
-                    {
-                        string key = parts[0];
-                        string value1 = parts[1];
-                        // Add to the dictionary
-                        dictionary[key] = (value1, lineNum);
-                    }
-                    else
-                    {
-                        // Handle invalid format
-                        Console.WriteLine($"Invalid line format: {line}");
-                    }
+        //     using (StreamWriter writer = new StreamWriter(filePath))
+        //     {
 
-                    lineNum++;
-                }
-            }
-            else
-            {
-                Console.WriteLine("File does not exist.");
-            }
-            keyValueLog = dictionary;
-        }
+        //         var sortedDict = keyValueLog.OrderBy(kv => kv.Value.Item2);
+
+        //         foreach (var kvp in sortedDict)
+        //         {
+        //             // Format: key, value1
+        //             string line = $"{kvp.Key},{kvp.Value.Item1}";
+        //             writer.WriteLine(line);
+        //         }
+        //     }
+        // }
+        // private void ReadInLogFile()
+        // {
+        //     string currentDirectory = Directory.GetCurrentDirectory();
+        //     string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
+        //     string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
+
+        //     string filePath = Path.Combine(modifiedParentDirectory, $"{Identifier}Info.txt");
+        //     Dictionary<string, (string, int)> dictionary = [];
+
+        //     // Check if the file exists
+        //     if (File.Exists(filePath))
+        //     {
+        //         // Read each line from the file
+
+        //         int lineNum = 1;
+        //         foreach (string line in File.ReadLines(filePath))
+        //         {
+        //             if (!string.IsNullOrWhiteSpace(line))
+        //             {
+        //                 // Split the line by comma
+        //                 string[] parts = line.Split(',');
+
+        //                 if (parts.Length == 3)
+        //                 {
+        //                     string key = parts[0];
+        //                     string value1 = parts[1];
+        //                     // Add to the dictionary
+        //                     dictionary[key] = (value1, lineNum);
+        //                 }
+        //                 else
+        //                 {
+        //                     // Handle invalid format
+        //                     Console.WriteLine($"Invalid line format: {line}");
+        //                 }
+        //             }
+        //             else
+        //             {
+        //                 // Handle empty line
+        //                 Console.WriteLine("Empty line encountered.");
+        //             }
+
+        //             lineNum++;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         Console.WriteLine("File does not exist.");
+
+        //     }
+        //     keyValueLog = dictionary;
+        // }
     }
 
 

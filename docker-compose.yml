@@ -11,10 +11,14 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
+      dockerfile: /RaftDistributed/RaftNode/Dockerfile  
     environment:
       SERVER_NAME: "1"
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
+    volumes:
+      - ${PWD}/RaftDistributed/information1/1LeaderInformation.txt:/app/1LeaderInformation.txt
+      - ${PWD}/RaftDistributed/information1/1InfoStorage.txt:/app/1Info.txt
+
     ports:
       - "2320:8080"
     networks:
@@ -26,10 +30,15 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
+      dockerfile: /RaftDistributed/RaftNode/Dockerfile  
     environment:
       SERVER_NAME: "2"
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
+    volumes:
+      - /RaftDistributed/information2/2LeaderInformation.txt:/information/2LeaderInformation.txt
+      - /RaftDistributed/information2/2InfoStorage.txt:/app/2Info.txt
+
+
     ports:
       - "2321:8080"
     networks:
@@ -41,10 +50,13 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ./RaftDistributed/RaftNode/Dockerfile  
+      dockerfile: /RaftDistributed/RaftNode/Dockerfile  
     environment:
-      SERVER_NAME: "1"
-      LIST_OF_NODES: "1,2,3"
+      SERVER_NAME: "3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
+    volumes:
+      - /RaftDistributed/information3/3LeaderInformation.txt:/information/3LeaderInformation.txt
+      - /RaftDistributed/information3/3InfoStorage.txt:/app/3Info.txt
     ports:
       - "2322:8080"
     networks:
@@ -56,9 +68,9 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: ./RaftDistributed/GateWay/Dockerfile  
+      dockerfile: /RaftDistributed/GateWay/Dockerfile  
     environment:
-      LIST_OF_NODES: "1,2,3"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
     ports:
       - "2319:8080"
     networks:

@@ -22,6 +22,10 @@ services:
       LIST_OF_NODES: "2=http://josh-node-2:8080;3=144.17.92.13:2322"
     ports:
       - "2320:8080"
+    volumes:
+      - ./information.txt:/1LeaderInformation.txt
+      - ./information2.txt:/InfoStorage1.txt
+
     networks:
       - monitoring
 
@@ -35,6 +39,9 @@ services:
     environment:
       SERVER_NAME: "2"
       LIST_OF_NODES: "1=http://josh-node-1:8080;3=144.17.92.13:2322"
+    volumes:
+      - ./information3.txt:/app/2LeaderInformation.txt
+      - ./information4.txt:/app/InfoStorage2.txt
     ports:
       - "2321:8080"
     networks:

@@ -50,10 +50,10 @@ public class NodeController : Controller
         node.AddToLogAsFollower(key, value, logIndex);
     }
 
-    [HttpPost("AddToLog/{key}/{value}")]
-    public void AddToLog(string key, string value)
+    [HttpPost("AddToLog")]
+    public void AddToLog(LogObject logObject)
     {
-        node.AddToLogAsLeaderAsync(key, value);
+        node.AddToLogAsLeaderAsync(logObject.key, logObject.value);
     }
 
 
@@ -70,16 +70,25 @@ public class NodeController : Controller
     }
 
     [HttpGet("StrongGet/{key}")]
-    public async Task<string?> StrongGetAsync(string key)
+    public async Task<ActionResult<Item>> StrongGetAsync(string key)
     {
-        return await node.StrongGet(key);
+        var (item, item2) = await node.StrongGet(key);
+        Console.WriteLine($"http {item}, {item2}");
+        Item item1 = new(item, item2);
+        Console.WriteLine($"Item {item1.value}, {item1.log}");
+        return Ok(item1);
+
     }
 
 
     [HttpGet("EventualGet/{key}")]
-    public string? EventualGetAsync(string key)
+    public ActionResult<Item> EventualGet(string key)
     {
-        return node.EventualGet(key);
+        var (item, item2) = node.EventualGet(key);
+        Console.WriteLine($"http {item}, {item2}");
+        Item item1 = new(item, item2);
+        Console.WriteLine(item1.ToString());
+        return Ok(item1);
     }
 
     [HttpPost("CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}")]
@@ -89,4 +98,8 @@ public class NodeController : Controller
     }
 
 }
-
+public class Item(string value, int log)
+{
+    public string value = value;
+    public int log = log;
+}

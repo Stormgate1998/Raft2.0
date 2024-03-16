@@ -32,14 +32,17 @@ foreach (string pair in pairs)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Use property names as they are defined in the class
+    });
 
-builder.Services.AddScoped<NodeService>(x =>
+builder.Services.AddSingleton<NodeService>(x =>
 {
     return new NodeService(myNode, keyValuePairs);
 });
 
-builder.Services.AddScoped<NodeController>(provider =>
+builder.Services.AddSingleton<NodeController>(provider =>
 {
     return new NodeController(provider.GetRequiredService<NodeService>());
 });
@@ -66,8 +69,3 @@ app.MapGet("/listofnodes", () =>
 app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
