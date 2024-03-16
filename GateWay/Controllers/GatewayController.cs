@@ -32,5 +32,30 @@ public class GatewayController : Controller
     {
         return gateway.ReturnList();
     }
+
+    [HttpPost("AddToLog/{key}/{value}")]
+    public async Task AddToLog(string key, string value)
+    {
+        await gateway.AddToLog(key, value);
+    }
+
+    [HttpGet("StrongGet/{key}")]
+    public async Task<string?> StrongGetAsync(string key)
+    {
+        return await gateway.StrongGet(key);
+    }
+
+
+    [HttpGet("EventualGet/{key}")]
+    public async Task<string?> EventualGetAsync(string key)
+    {
+        return await gateway.EventualGet(key);
+    }
+
+    [HttpPost("CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}")]
+    public async Task<bool> CompareVersionAndSwap(string key, string newValue, int expectedVersion)
+    {
+        return await gateway.CompareVersionAndSwap(key, newValue, expectedVersion);
+    }
 }
 

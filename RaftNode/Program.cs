@@ -34,14 +34,14 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<Node>(x =>
+builder.Services.AddScoped<NodeService>(x =>
 {
-    return new Node(myNode, keyValuePairs);
+    return new NodeService(myNode, keyValuePairs);
 });
 
 builder.Services.AddScoped<NodeController>(provider =>
 {
-    return new NodeController(provider.GetRequiredService<Node>());
+    return new NodeController(provider.GetRequiredService<NodeService>());
 });
 var app = builder.Build();
 
