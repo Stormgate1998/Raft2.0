@@ -20,6 +20,20 @@ public class GatewayController : Controller
         return await gateway.ReturnIdOfNodeAsync(id.ToString());
     }
 
+    [HttpGet("GetLeader")]
+    public async Task<string> GetLeader()
+    {
+        if (await gateway.IsLeaderValid())
+        {
+            return gateway.Leader;
+        }
+        else
+        {
+            await gateway.FindLeader();
+            return gateway.Leader;
+        }
+    }
+
 
     [HttpGet("GetSecondId/{idone}/{idtwo}")]
     public async Task<string> GoGetCopyOfImage(int idone, int idtwo)
