@@ -10,7 +10,7 @@ public class ApiService
 
     private async Task AddToLog(string key, string value)
     {
-        await httpClient.PostAsync("Gateway/AddToLog", new LogObject(key, value));
+        await httpClient.PostAsJsonAsync<LogObject>("Gateway/AddToLog", new LogObject(key, value));
     }
 
     private async Task CompareVersionAndSwap(string key, string newValue, string expectedVersion)
