@@ -55,18 +55,18 @@ public class GatewayController : Controller
     [HttpPost("AddToLog")]
     public async Task AddToLog(LogObject logObject)
     {
-        await gateway.AddToLog(logObject.key, logObject.value);
+        await gateway.AddToLog(logObject);
     }
 
     [HttpGet("StrongGet/{key}")]
-    public async Task<Item> StrongGetAsync(string key)
+    public async Task<string> StrongGetAsync(string key)
     {
         return await gateway.StrongGet(key);
     }
 
 
     [HttpGet("EventualGet/{key}")]
-    public async Task<Item> EventualGetAsync(string key)
+    public async Task<string> EventualGetAsync(string key)
     {
         return await gateway.EventualGet(key);
     }

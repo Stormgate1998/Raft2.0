@@ -14,29 +14,31 @@ namespace RaftNode.Services
         public string value { get; set; }
 
     }
+    public class KeyValueItem(string value, int log)
+    {
+        public string value = value;
+        public int log = log;
+    }
+
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public class NodeService
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
         private static readonly object fileLock = new();
+        private string votedFor;
+        private int term;
 
         public NodeService(string id, Dictionary<int, string> nodes)
         {
             Identifier = id;
             List = nodes;
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
-            string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
+            votedFor = "";
 
-            LogFileName = Path.Combine(modifiedParentDirectory, "app", $"{id}LeaderInformation.txt");
+            // LogFileName = Path.Combine("information", $"{id}LeaderInformation.txt");
 
-
-
-            string current;
-            int term;
-            string leader;
-            (term, leader, current) = ReadNumbersFromFile(LogFileName);
+            string leader = "";
+            // (term, leader, current) = ReadNumbersFromFile(LogFileName);
             Random random = new Random();
             WaitTime = random.Next(1100, 2500);
             ElectionCountdownTimer = new System.Timers.Timer(WaitTime);
@@ -51,21 +53,11 @@ namespace RaftNode.Services
             HeartbeatTimer.Enabled = true;
             ElectionCountdownTimer.Enabled = true;
 
-            if (leader == Identifier)
-            {
-                ElectionCountdownTimer.Stop();
-                HeartbeatTimer.Start();
-                CurrentRole = Role.LEADER;
-                currentLeader = Identifier;
-                Console.WriteLine($"Node {Identifier} is leader for term {term}");
-            }
-            else
-            {
-                ElectionCountdownTimer.Start();
-                HeartbeatTimer.Stop();
-                CurrentRole = Role.FOLLOWER;
-                currentLeader = leader;
-            }
+            ElectionCountdownTimer.Start();
+            HeartbeatTimer.Stop();
+            CurrentRole = Role.FOLLOWER;
+            currentLeader = leader;
+
             // ReadInLogFile();
         }
 
@@ -79,7 +71,7 @@ namespace RaftNode.Services
 
         public int WaitTime { get; set; }
 
-        public string LogFileName { get; set; }
+        // public string LogFileName { get; set; }
         public System.Timers.Timer ElectionCountdownTimer { get; set; }
         public System.Timers.Timer HeartbeatTimer { get; set; }
         public string ReturnId()
@@ -112,63 +104,63 @@ namespace RaftNode.Services
         {
             return List;
         }
-        private static (int, string, string) ReadNumbersFromFile(string filePath)
-        {
+        // private static (int, string, string) ReadNumbersFromFile(string filePath)
+        // {
 
-            lock (fileLock)
-            {
-                if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath) || new FileInfo(filePath).Length == 0)
-                {
-                    // Create the file if it doesn't exist
-                    if (!File.Exists(filePath))
-                    {
-                        File.WriteAllText(filePath, "");
-                    }
-                    // Return empty information
-                    return (0, "", "");
-                }
-                // Read numbers from file
-                string[] numbers = File.ReadAllText(filePath).Split(',');
-                int number1 = Convert.ToInt32(numbers[0]);
-                string guid = numbers[1];
-                string id = numbers[2];
-                return (number1, guid, id);
-            }
-        }
+        //     lock (fileLock)
+        //     {
+        //         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath) || new FileInfo(filePath).Length == 0)
+        //         {
+        //             // Create the file if it doesn't exist
+        //             if (!File.Exists(filePath))
+        //             {
+        //                 File.WriteAllText(filePath, "");
+        //             }
+        //             // Return empty information
+        //             return (0, "", "");
+        //         }
+        //         // Read numbers from file
+        //         string[] numbers = File.ReadAllText(filePath).Split(',');
+        //         int number1 = Convert.ToInt32(numbers[0]);
+        //         string guid = numbers[1];
+        //         string id = numbers[2];
+        //         return (number1, guid, id);
+        //     }
+        // }
 
-        private void WriteNumbersToFile(int number1, string number2)
-        {
-            string filePath = LogFileName;
-            lock (fileLock)
-            {
-                // Check if the file is being read
-                while (IsFileInUse(filePath))
-                {
-                    Console.WriteLine("File is currently being read. Please try again later.");
-                    System.Threading.Thread.Sleep(250); // Wait for 1 second before retrying
-                }
+        // private void WriteNumbersToFile(int number1, string number2)
+        // {
+        //     string filePath = LogFileName;
+        //     lock (fileLock)
+        //     {
+        //         // Check if the file is being read
+        //         while (IsFileInUse(filePath))
+        //         {
+        //             Console.WriteLine("File is currently being read. Please try again later.");
+        //             System.Threading.Thread.Sleep(250); // Wait for 1 second before retrying
+        //         }
 
-                // Write numbers to file
-                string data = $"{number1},{number2},{this.Identifier}";
-                File.WriteAllText(filePath, data);
-            }
-        }
+        //         // Write numbers to file
+        //         string data = $"{number1},{number2},{this.Identifier}";
+        //         File.WriteAllText(filePath, data);
+        //     }
+        // }
 
-        private static bool IsFileInUse(string filePath)
-        {
-            try
-            {
-                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                {
-                    fs.ReadByte();
-                }
-                return false;
-            }
-            catch (IOException)
-            {
-                return true;
-            }
-        }
+        // private static bool IsFileInUse(string filePath)
+        // {
+        //     try
+        //     {
+        //         using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        //         {
+        //             fs.ReadByte();
+        //         }
+        //         return false;
+        //     }
+        //     catch (IOException)
+        //     {
+        //         return true;
+        //     }
+        // }
 
         private async void BecomeLeader(Object source, ElapsedEventArgs e)
         {
@@ -178,18 +170,19 @@ namespace RaftNode.Services
         public bool? ProcessVoteRequest(string voterGuid, int term)
         { //ELEPHANT Edit for log thing
 
-            var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
-            if (term > currentTerm)
+            // var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
+            if (term > this.term)
             {
                 if (CurrentRole != Role.FOLLOWER)
                 {
                     HeartbeatTimer.Stop();
                     CurrentRole = Role.FOLLOWER;
                 }
-                WriteNumbersToFile(term, voterGuid);
+                // WriteNumbersToFile(term, voterGuid);
+                votedFor = voterGuid;
                 return true;
             }
-            else if (term == currentTerm)
+            else if (term == this.term)
             {
                 return voterGuid == votedFor;
             }
@@ -200,11 +193,12 @@ namespace RaftNode.Services
         public bool? ProcessHeartbeat(string leaderGuid, int term)
         {
             currentLeader = leaderGuid;
-            var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
+            // var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
 
-            if (votedFor != leaderGuid || currentTerm != term)
+            if (votedFor != leaderGuid || this.term != term)
             {
-                WriteNumbersToFile(term, votedFor);
+                this.term = term;
+                votedFor = leaderGuid;
             }
             CurrentRole = Role.FOLLOWER;
 
@@ -216,12 +210,16 @@ namespace RaftNode.Services
 
         private void SendHeartbeats(Object source, ElapsedEventArgs e)
         {
+            if (currentLeader != Identifier)
+            {
+                currentLeader = Identifier;
+            }
             _ = SendingHeartbeatAsync();
         }
 
         private async Task SendingHeartbeatAsync()
         {
-            var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
+            // var (currentTerm, votedFor, _) = ReadNumbersFromFile(LogFileName);
 
             Console.WriteLine("Sending Heartbeats");
             foreach (var item in List)
@@ -229,7 +227,7 @@ namespace RaftNode.Services
                 if (item.Key.ToString() != this.Identifier)
                 {
                     HttpClient client = clientMaker(item.Key.ToString());
-                    await client.PostAsync($"Node/ProcessHeartBeat/{Identifier}/{currentTerm}", null);
+                    await client.PostAsync($"Node/ProcessHeartBeat/{Identifier}/{this.term}", null);
                 }
             }
         }
@@ -245,7 +243,7 @@ namespace RaftNode.Services
 
             ElectionCountdownTimer.Stop();
 
-            var (term, _, _) = ReadNumbersFromFile(LogFileName);
+            // var (term, _, _) = ReadNumbersFromFile(LogFileName);
             term += 1;
             if (UsedTerm != -1)
             {
@@ -253,7 +251,7 @@ namespace RaftNode.Services
                 Console.WriteLine($"Term is {term}");
 
             }
-            WriteNumbersToFile(term, Identifier);
+            // WriteNumbersToFile(term, Identifier);
 
             int voteCount = 1;
             foreach (var node in List)
@@ -319,7 +317,7 @@ namespace RaftNode.Services
             }
             else
             {
-                return ("", 0); // Key not found
+                return ("NULL", 0); // Key not found
             }
         }
 
@@ -372,7 +370,7 @@ namespace RaftNode.Services
                     return item;
                 }
             }
-            return ("", 0);
+            return ("NULL", 0);
         }
 
         public async Task<bool> ActuallyLeader()
@@ -422,11 +420,7 @@ namespace RaftNode.Services
         }
         // private void CreateLogFile()
         // {
-        //     string currentDirectory = Directory.GetCurrentDirectory();
-        //     string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
-        //     string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
-
-        //     string filePath = Path.Combine(modifiedParentDirectory, $"{Identifier}Info.txt");
+        //     string filePath = Path.Combine("information", $"{Identifier}Info.txt");
         //     if (!File.Exists(filePath))
         //     {
         //         File.Create(filePath).Close();
@@ -452,11 +446,7 @@ namespace RaftNode.Services
         // }
         // private void ReadInLogFile()
         // {
-        //     string currentDirectory = Directory.GetCurrentDirectory();
-        //     string parentDirectory = Path.GetDirectoryName(currentDirectory); // Retrieve the parent directory
-        //     string modifiedParentDirectory = parentDirectory?.Replace("/app", ""); // Remove "app/" from the parent directory path
-
-        //     string filePath = Path.Combine(modifiedParentDirectory, $"{Identifier}Info.txt");
+        //     string filePath = Path.Combine("information", $"{Identifier}Info.txt");
         //     Dictionary<string, (string, int)> dictionary = [];
 
         //     // Check if the file exists
@@ -501,6 +491,7 @@ namespace RaftNode.Services
         //     }
         //     keyValueLog = dictionary;
         // }
+
     }
 
 

@@ -16,8 +16,8 @@ services:
       SERVER_NAME: "1"
       LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
     volumes:
-      - ${PWD}/RaftDistributed/information1/1LeaderInformation.txt:/app/1LeaderInformation.txt
-      - ${PWD}/RaftDistributed/information1/1InfoStorage.txt:/app/1Info.txt
+      - /RaftDistributed/information1/:/app/information
+      # - /RaftDistributed/information1/1LeaderInformation.txt:/app/1LeaderInformation.txt
 
     ports:
       - "2320:8080"
@@ -35,8 +35,7 @@ services:
       SERVER_NAME: "2"
       LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
     volumes:
-      - /RaftDistributed/information2/2LeaderInformation.txt:/information/2LeaderInformation.txt
-      - /RaftDistributed/information2/2InfoStorage.txt:/app/2Info.txt
+      - /RaftDistributed/information2/:/app/information
 
 
     ports:
@@ -55,8 +54,7 @@ services:
       SERVER_NAME: "3"
       LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://josh-node-3:8080;"
     volumes:
-      - /RaftDistributed/information3/3LeaderInformation.txt:/information/3LeaderInformation.txt
-      - /RaftDistributed/information3/3InfoStorage.txt:/app/3Info.txt
+      - /RaftDistributed/information3/:/app/information
     ports:
       - "2322:8080"
     networks:

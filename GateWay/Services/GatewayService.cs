@@ -93,6 +93,7 @@
 
         public HttpClient clientMaker(string id)
         {
+            Console.WriteLine(nodes[int.Parse(id)]);
             HttpClient client = new() { BaseAddress = new Uri(nodes[int.Parse(id)]) };
             return client;
         }
@@ -102,26 +103,38 @@
         {
             string newLeader = await FindLeader();
             Console.WriteLine($"valid leader: {newLeader}, stored leader: {Leader}");
+            if (newLeader != Leader)
+            {
+                Leader = newLeader;
+            }
             return newLeader == Leader;
         }
 
-        public async Task<Item> EventualGet(string key)
+        public async Task<string> EventualGet(string key)
         {
 
             var randomNode = ChooseRandomIndex();
+            Console.WriteLine($"Index: {randomNode}");
 
             HttpClient client = clientMaker(randomNode.ToString());
-            return await client.GetFromJsonAsync<Item>($"EventualGet/{key}");
+
+            var response = await client.GetAsync($"Node/EventualGet/{key}");
+            string result = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(result);
+            return result;
         }
 
-        public async Task<Item> StrongGet(string key)
+        public async Task<string> StrongGet(string key)
         {
             // Proxy StrongGet request to the leader
             //request
             if (await IsLeaderValid())
             {
                 HttpClient client = clientMaker(Leader);
-                return await client.GetFromJsonAsync<Item>($"StrongGet/{key}");
+                var response = await client.GetAsync($"Node/StrongGet/{key}");
+                string result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                return result;
             }
             else
             {
@@ -132,11 +145,14 @@
                 if (await IsLeaderValid())
                 {
                     HttpClient client = clientMaker(Leader);
-                    return await client.GetFromJsonAsync<Item>($"StrongGet/{key}");
+                    var response = await client.GetAsync($"Node/StrongGet/{key}");
+                    string result = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(result);
+                    return result;
                 }
                 else
                 {
-                    return new Item("", 0); // Leader not valid
+                    return "NULL,0"; // Leader not valid
                 }
             }
         }
@@ -147,7 +163,7 @@
             {
                 HttpClient client = clientMaker(Leader);
 
-                HttpResponseMessage response = await client.PostAsync($"CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
+                HttpResponseMessage response = await client.PostAsync($"Node/CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
 
                 response.EnsureSuccessStatusCode();
 
@@ -162,7 +178,7 @@
                 {
                     HttpClient client = clientMaker(Leader);
 
-                    HttpResponseMessage response = await client.PostAsync($"CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
+                    HttpResponseMessage response = await client.PostAsync($"Node/CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
 
                     response.EnsureSuccessStatusCode();
 
@@ -176,27 +192,28 @@
             }
         }
 
-        public async Task AddToLog(string key, string value)
+        public async Task AddToLog(LogObject logObject)
         {
             bool isValid = await IsLeaderValid();
             if (isValid)
             {
                 HttpClient client = clientMaker(Leader);
-
-                HttpResponseMessage response = await client.PostAsJsonAsync<LogObject>($"AddToLog", new LogObject(key, value));
-
+                Console.WriteLine(client.BaseAddress);
+                Console.WriteLine($"Node/AddToLog/{logObject.key}, {logObject.value}");
+                HttpResponseMessage response = await client.PostAsync($"Node/AddToLog/{logObject.key}/{logObject.value}", null);
+                Console.WriteLine(response.Content.ToString());
                 response.EnsureSuccessStatusCode();
             }
             else
             {
                 Leader = await FindLeader();
-                bool isValid2 = await IsLeaderValid();
-                if (isValid2)
+                isValid = await IsLeaderValid();
+                if (isValid)
                 {
                     HttpClient client = clientMaker(Leader);
 
-                    HttpResponseMessage response = await client.PostAsJsonAsync<LogObject>($"AddToLog", new LogObject(key, value));
-
+                    HttpResponseMessage response = await client.PostAsync($"Node/AddToLog/{logObject.key}/{logObject.value}", null);
+                    Console.WriteLine(response.Content.ToString());
                     response.EnsureSuccessStatusCode();
                 }
             }
