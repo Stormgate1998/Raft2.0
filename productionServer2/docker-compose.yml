@@ -11,7 +11,7 @@ services:
       dockerfile: RaftNode/production/Dockerfile  
     environment:
       SERVER_NAME: "3"
-      LIST_OF_NODES: "1=144.17.92.12:2320;2=144.17.92.12:2321;"
+      LIST_OF_NODES: "1=http://144.17.92.12:2320;2=http://144.17.92.12:2321;"
     volumes:
       - ./information.txt:/app/3LeaderInformation.txt
       - ./information2.txt:/app/InfoStorage3.txt

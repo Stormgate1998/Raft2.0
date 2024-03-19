@@ -19,7 +19,7 @@ services:
       dockerfile: RaftNode/production/Dockerfile    
     environment:
       SERVER_NAME: "1"
-      LIST_OF_NODES: "2=http://josh-node-2:8080;3=144.17.92.13:2322"
+      LIST_OF_NODES: "2=http://josh-node-2:8080;3=http://144.17.92.13:2322"
     ports:
       - "2320:8080"
     volumes:
@@ -38,7 +38,7 @@ services:
       dockerfile: RaftNode/production/Dockerfile   
     environment:
       SERVER_NAME: "2"
-      LIST_OF_NODES: "1=http://josh-node-1:8080;3=144.17.92.13:2322"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;3=http://144.17.92.13:2322"
     volumes:
       - ./information3.txt:/app/2LeaderInformation.txt
       - ./information4.txt:/app/InfoStorage2.txt
@@ -55,7 +55,7 @@ services:
       context: ..
       dockerfile: GateWay/production/Dockerfile  
     environment:
-      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=144.17.92.13:2322"
+      LIST_OF_NODES: "1=http://josh-node-1:8080;2=http://josh-node-2:8080;3=http://144.17.92.13:2322"
     ports:
       - "2319:8080"
     networks:
