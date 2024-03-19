@@ -84,6 +84,6 @@ services:
     environment:
       GATEWAY_URL_ARG: "http://josh-gateway:8080"
     ports:
-      - "2319:8080"
+      - "2323:8080"
     networks:
       - monitoring
