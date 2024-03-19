@@ -7,12 +7,12 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["RaftDistributed/FrontEndRaft/FrontEndRaft.csproj", "RaftDistributed/FrontEndRaft/"]
+COPY ["FrontEndRaft/FrontEndRaft.csproj", "FrontEndRaft/"]
 
-RUN dotnet clean "./RaftDistributed/FrontEndRaft/./FrontEndRaft.csproj"
-RUN dotnet restore "./RaftDistributed/FrontEndRaft/./FrontEndRaft.csproj"
+RUN dotnet clean "./FrontEndRaft/./FrontEndRaft.csproj"
+RUN dotnet restore "./FrontEndRaft/./FrontEndRaft.csproj"
 COPY . .
-WORKDIR "/src/RaftDistributed/FrontEndRaft"
+WORKDIR "/src/FrontEndRaft"
 RUN dotnet build "./FrontEndRaft.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 ARG GATEWAY_URL_ARG

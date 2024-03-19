@@ -67,7 +67,7 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: FrontEndRaft/Dockerfile  
+      dockerfile: FrontEndRaft/production/Dockerfile  
     environment:
       GATEWAY_URL_ARG: "http://josh-gateway:8080"
     ports:

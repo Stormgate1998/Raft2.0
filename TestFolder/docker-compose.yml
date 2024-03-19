@@ -6,8 +6,6 @@ services:
         context: ..
         dockerfile: ./GateWay/Test.Dockerfile
     command: tail -f /dev/null
-    environment:
-      - IMAGE_API_URL= "http://jztestimageapi:8081"
 
   josh-node-1:
     container_name: "josh-test-node-1"    
