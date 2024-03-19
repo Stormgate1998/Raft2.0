@@ -60,6 +60,20 @@ services:
       - "2319:8080"
     networks:
       - monitoring
+  
+  frontend:
+    container_name: "josh-frontend"    
+    user: 0:0
+    restart: unless-stopped
+    build: 
+      context: ..
+      dockerfile: FrontEndRaft/Dockerfile  
+    environment:
+      GATEWAY_URL_ARG: "http://josh-gateway:8080"
+    ports:
+      - "2319:8080"
+    networks:
+      - monitoring
 
   josh-otel-collector:
     container_name: "josh-otel-collector"
