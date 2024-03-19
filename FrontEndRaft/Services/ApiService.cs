@@ -1,8 +1,12 @@
+using System.Collections;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 namespace FrontEndRaft.Services;
 
 public class ApiService
 {
-    HttpClient httpClient;
+    private readonly HttpClient httpClient;
     public ApiService(HttpClient httpClient)
     {
         this.httpClient = httpClient;
@@ -16,7 +20,6 @@ public class ApiService
     private async Task CompareVersionAndSwap(string key, string newValue, string expectedVersion)
     {
         await httpClient.PostAsync($"Gateway/CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
-        string result = await response.Content.ReadAsStringAsync();;
     }
 
     private async Task<(string, int)> EventualGet(string key)
