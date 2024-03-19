@@ -10,15 +10,13 @@ public class ApiService
 
     private async Task AddToLog(string key, string value)
     {
-        await httpClient.PostAsJsonAsync<LogObject>("Gateway/AddToLog", new LogObject(key, value));
+        await httpClient.PostAsJsonAsync("Gateway/AddToLog", new LogObject(key, value));
     }
 
     private async Task CompareVersionAndSwap(string key, string newValue, string expectedVersion)
     {
         await httpClient.PostAsync($"Gateway/CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
-        string result = await response.Content.ReadAsStringAsync();
-
-        return result;
+        string result = await response.Content.ReadAsStringAsync();;
     }
 
     private async Task<(string, int)> EventualGet(string key)
