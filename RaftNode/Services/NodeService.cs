@@ -300,8 +300,11 @@ namespace RaftNode.Services
 
         public void AddToLogAsFollower(string key, string value, int logIndex)
         {
-            keyValueLog[key] = (value, logIndex);
-            Console.WriteLine($"Node {Identifier} as {CurrentRole} stored the value");
+            if (!keyValueLog.ContainsKey(key))
+            {
+                keyValueLog[key] = (value, logIndex);
+                Console.WriteLine($"Node {Identifier} as {CurrentRole} stored the value");
+            }
         }
 
 
@@ -309,15 +312,16 @@ namespace RaftNode.Services
         public (string, int) EventualGet(string key)
         {
             // Return the latest value from the log
-            if (keyValueLog.TryGetValue(key, out (string, int) value))
+            if (keyValueLog.ContainsKey(key))
             {
+                var value = keyValueLog[key];
                 var item = (value.Item1, value.Item2);
-                Console.WriteLine(item);
+                Console.WriteLine($"Eventual get: {item}");
                 return item;
             }
             else
             {
-                return ("NULL", 0); // Key not found
+                return ("0", 0); // Key not found
             }
         }
 
@@ -330,21 +334,21 @@ namespace RaftNode.Services
                 var (_, version) = value;
                 if (version == expectedVersion)
                 {
+                    Console.WriteLine($"Updating {key} to {newValue}");
+                    keyValueLog[key] = (newValue, version);
+
                     if (CurrentRole == Role.LEADER)
-                    {
-                        keyValueLog[key] = (newValue, version);
-                    }
-                    else
                     {
                         foreach (var item in List)
                         {
                             if (item.Key.ToString() != Identifier)
                             {
-                                HttpClient client = clientMaker(key);
+                                HttpClient client = clientMaker(item.Key.ToString());
                                 await client.PostAsync($"CompareVersionAndSwap/{key}/{newValue}/{expectedVersion}", null);
                             }
                         }
                     }
+
                     return true; // Successful swap
                 }
                 else
@@ -370,7 +374,7 @@ namespace RaftNode.Services
                     return item;
                 }
             }
-            return ("NULL", 0);
+            return ("0", 0);
         }
 
         public async Task<bool> ActuallyLeader()
@@ -405,15 +409,19 @@ namespace RaftNode.Services
 
         public async Task AddToLogAsLeaderAsync(string key, string value)
         {//DO THIS
-            Console.WriteLine($"Adding value {value} to {key}");
-            keyValueLog[key] = (value, keyValueLog.Values.Count() + 1);
-
-            foreach (var item in List)
+            if (!keyValueLog.ContainsKey(key))
             {
-                if (item.Key.ToString() != Identifier)
+
+                Console.WriteLine($"Adding value {value} to {key}");
+                keyValueLog[key] = (value, keyValueLog.Values.Count() + 1);
+
+                foreach (var item in List)
                 {
-                    HttpClient client = clientMaker(item.Key.ToString());
-                    await client.PostAsync($"Node/AddToLogFollower/{key}/{value}/{keyValueLog.Values.Count() + 1}", null);
+                    if (item.Key.ToString() != Identifier)
+                    {
+                        HttpClient client = clientMaker(item.Key.ToString());
+                        await client.PostAsync($"Node/AddToLogFollower/{key}/{value}/{keyValueLog.Values.Count() + 1}", null);
+                    }
                 }
             }
             // CreateLogFile();

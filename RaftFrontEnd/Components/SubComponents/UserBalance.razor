@@ -1,0 +1,47 @@
+﻿@using RaftFrontEnd.Services
+@inject ApiService service
+
+
+<h3>@Username</h3>
+
+<p>Balance: @Balance</p>
+
+<button @onclick="IncrementBalance">Increment Balance</button>
+<button @onclick="DecrementBalance">Decrement Balance</button>
+
+@code {
+    [Parameter]
+    public string Username { get; set; }
+
+    private int Balance { get; set; }
+
+    private int recordNumber { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateBalance();
+    }
+
+    private async Task UpdateBalance()
+    {
+        string tempBalance;
+        (tempBalance, recordNumber) = await service.StrongGetBalance(Username);
+        Balance = int.Parse(tempBalance);
+    }
+
+    private async Task IncrementBalance()
+    {
+        await service.ModifyBalance(Username, 1);
+        await UpdateBalance();
+    }
+
+    private async Task DecrementBalance()
+    {
+        if (Balance > 0)
+        {
+            await service.ModifyBalance(Username, -1);
+            await UpdateBalance();
+        }
+    }
+
+}

@@ -1,0 +1,47 @@
+﻿@using RaftFrontEnd.Services
+@inject ApiService service
+
+
+<h3>@Username</h3>
+
+<p>Amount In Stock: @Stock</p>
+
+<button @onclick="IncrementStock">Increment Stock</button>
+<button @onclick="DecrementStock">Decrement Stock</button>
+
+@code {
+    [Parameter]
+    public string Username { get; set; }
+
+    private int Stock { get; set; }
+
+    private int recordNumber { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateStock();
+    }
+
+    private async Task UpdateStock()
+    {
+        string tempStock;
+        (tempStock, recordNumber) = await service.StrongGetStock(Username);
+        Stock = int.Parse(tempStock);
+    }
+
+    private async Task IncrementStock()
+    {
+        await service.ModifyStock(Username, 1);
+        await UpdateStock();
+    }
+
+    private async Task DecrementStock()
+    {
+        if (Stock > 0)
+        {
+            await service.ModifyStock(Username, -1);
+            await UpdateStock();
+        }
+    }
+
+}

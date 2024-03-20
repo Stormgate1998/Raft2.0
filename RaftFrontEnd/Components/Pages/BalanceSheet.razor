@@ -1,0 +1,27 @@
+﻿@page "/balance"
+@using RaftFrontEnd.Components.SubComponents
+@using RaftFrontEnd.Services
+@inject ApiService service
+@rendermode InteractiveServer
+
+<PageTitle>Balances</PageTitle>
+
+<h1>Balances</h1>
+<button  @onclick="Seed">seed</button>
+
+@foreach(string item in list)
+{
+    <UserBalance Username=@item/>
+}
+
+@code {
+
+    public string[] list = ["Charlie", "John Green", "Stark Industries", "Tobias", "Nobody"];
+
+    private async Task Seed(){
+        foreach(var item in list){
+            await service.AddBalance(item);
+        }
+    }
+
+}

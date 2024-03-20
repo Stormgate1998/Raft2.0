@@ -25,7 +25,7 @@
         Dictionary<int, string> nodes = nodes;
         private readonly ILogger<Gateway> logger = logger;
 
-        public string Leader = "1";
+        public string Leader {get; set; }
 
         public async Task<string> ReturnIdOfNodeAsync(string id)
         {
@@ -85,7 +85,6 @@
 
                 HttpClient client = clientMaker(index.ToString());
                 var leader = await client.GetFromJsonAsync<int>($"Node/FindLeader");
-                Console.WriteLine(leader);
                 guid = leader.ToString();
             }
             return guid;
@@ -103,10 +102,7 @@
         {
             string newLeader = await FindLeader();
             Console.WriteLine($"valid leader: {newLeader}, stored leader: {Leader}");
-            if (newLeader != Leader)
-            {
-                Leader = newLeader;
-            }
+            Leader = newLeader;
             return newLeader == Leader;
         }
 
@@ -152,7 +148,7 @@
                 }
                 else
                 {
-                    return "NULL,0"; // Leader not valid
+                    return "0,0"; // Leader not valid
                 }
             }
         }

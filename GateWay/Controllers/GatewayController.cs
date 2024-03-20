@@ -24,15 +24,12 @@ public class GatewayController : Controller
     public async Task<string> GetLeader()
     {
         bool valid = await gateway.IsLeaderValid();
-        Console.WriteLine(valid);
         if (valid)
         {
-            Console.WriteLine("Leader is valid");
             return gateway.Leader;
         }
         else
         {
-            Console.WriteLine("Finding Leader");
 
             await gateway.FindLeader();
             return gateway.Leader;
@@ -52,9 +49,10 @@ public class GatewayController : Controller
         return gateway.ReturnList();
     }
 
-    [HttpPost("AddToLog")]
-    public async Task AddToLog(LogObject logObject)
+    [HttpPost("AddToLog/{key}/{value}")]
+    public async Task AddToLog(string key, string value)
     {
+        LogObject logObject = new(key, value);
         await gateway.AddToLog(logObject);
     }
 

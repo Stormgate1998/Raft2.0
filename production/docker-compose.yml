@@ -67,9 +67,7 @@ services:
     restart: unless-stopped
     build: 
       context: ..
-      dockerfile: FrontEndRaft/production/Dockerfile  
-    environment:
-      GATEWAY_URL_ARG: "http://josh-gateway:8080"
+      dockerfile: RaftFrontEnd/production/Dockerfile  
     ports:
       - "2323:8080"
     networks:

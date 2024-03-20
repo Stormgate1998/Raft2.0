@@ -1,0 +1,27 @@
+﻿@page "/stock"
+@using RaftFrontEnd.Components.SubComponents
+@using RaftFrontEnd.Services
+@inject ApiService service
+@rendermode InteractiveServer
+
+<PageTitle>Stocks</PageTitle>
+
+<h1>Stocks</h1>
+<button  @onclick="Seed">seed</button>
+
+@foreach(string item in list)
+{
+    <UserStock Username=@item/>
+}
+
+@code {
+
+    public string[] list = ["Rubber Duck", "Brick", "Gold Bar", "Planet", "Void"];
+
+    private async Task Seed(){
+        foreach(var item in list){
+            await service.AddStock(item);
+        }
+    }
+
+}

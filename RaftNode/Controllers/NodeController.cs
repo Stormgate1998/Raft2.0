@@ -75,7 +75,7 @@ public class NodeController : Controller
         var (item, item2) = await node.StrongGet(key);
         Console.WriteLine($"http {item}, {item2}");
         KeyValueItem item1 = new(item, item2);
-        return $"{item1.value},{item1.log}";
+        return $"{item},{item2}";
 
     }
 
