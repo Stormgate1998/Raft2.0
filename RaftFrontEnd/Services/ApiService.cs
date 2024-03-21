@@ -65,25 +65,24 @@ public class ApiService
 
     public async Task<(string, int)> StrongGetBalance(string key)
     {
-        string newKey = "balance-of_"+key;
+        string newKey = "balance-of_" + key;
         string value;
         int number;
-        (value, number) = await StrongGet( newKey);
+        (value, number) = await StrongGet(newKey);
         if (number == 0)
         {
-            await AddToLog( newKey, "0");
-            (value, number) = await StrongGet( newKey);
+            await AddToLog(newKey, "0");
+            (value, number) = await StrongGet(newKey);
         }
         return (value, number);
     }
-    
+
 
 
     public async Task AddBalance(string username)
     {
-        string value;
         int number;
-        (value, number) = await StrongGet($"balance-of_{username}");
+        (_, number) = await StrongGet($"balance-of_{username}");
         if (number == 0)
         {
             Console.WriteLine($"Adding log balance-of {username} to log");
@@ -113,27 +112,26 @@ public class ApiService
     }
 
 
-     public async Task<(string, int)> StrongGetStock(string key)
+    public async Task<(string, int)> StrongGetStock(string key)
     {
-        string newKey = "stock-of_"+key;
+        string newKey = "stock-of_" + key;
         string value;
         int number;
-        (value, number) = await StrongGet( newKey);
+        (value, number) = await StrongGet(newKey);
         if (number == 0)
         {
-            await AddToLog( newKey, "0");
-            (value, number) = await StrongGet( newKey);
+            await AddToLog(newKey, "0");
+            (value, number) = await StrongGet(newKey);
         }
         return (value, number);
     }
-    
+
 
 
     public async Task AddStock(string username)
     {
-        string value;
         int number;
-        (value, number) = await StrongGet($"stock-of_{username}");
+        (_, number) = await StrongGet($"stock-of_{username}");
         if (number == 0)
         {
             Console.WriteLine($"Adding log stock-of {username} to log");
@@ -158,8 +156,47 @@ public class ApiService
         Console.WriteLine($"result after change : {newResult}");
 
         await CompareVersionAndSwap(key, newResult.ToString(), number.ToString());
+    }
 
+    public async Task SubmitOrder(List<OrderItem> orderItems, string selectedUsername)
+    {
+        // Call StrongGet("pending-orders")
+        var pendingOrders = await StrongGet("pending-orders");
 
+        int orderId;
+        if (pendingOrders.Item2 == 0)
+        {
+            orderId = 1;
+        }
+        else
+        {
+            // Parse the string of numbers separated by commas
+            var orderIds = pendingOrders.Item1.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                              .Select(int.Parse)
+                                              .ToList();
+
+            // Find the maximum order ID and increment by one
+            orderId = orderIds.Max() + 1;
+
+            while ((await StrongGet($"order-id {orderId}")).Item2 != 0)
+            {
+                orderId++;
+            }
+        }
+
+        // Convert orderItems to a string in the specified format
+        var orderItemsString = string.Join(";", orderItems.Select(item => $"{item.Product},{item.Quantity}"));
+
+        // Make a call to AddToNode to submit the order
+        await AddToLog($"order-id {orderId}", $"{selectedUsername}:{orderItemsString}");
+        if (orderId == 1)
+        {
+            await AddToLog("pending-orders", $"{orderId}");
+        }
+        else
+        {
+            await CompareVersionAndSwap("pending-orders", $"{pendingOrders.Item1},{orderId}", pendingOrders.Item2.ToString());
+        }
     }
 }
 public class LogObject(string key, string value)
@@ -167,4 +204,9 @@ public class LogObject(string key, string value)
     public string key = key;
     public string value = value;
 
+}
+public class OrderItem
+{
+    public string Product { get; set; }
+    public int Quantity { get; set; } = 1;
 }

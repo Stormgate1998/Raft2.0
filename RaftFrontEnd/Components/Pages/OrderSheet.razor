@@ -1,0 +1,103 @@
+@page "/order"
+@using System.Collections.Generic
+@using RaftFrontEnd.Services
+@using System.Diagnostics
+@rendermode InteractiveServer
+@inject ApiService service
+<h3>Order Page</h3>
+
+<div>
+    <label for="username">Select Username:</label>
+    <select id="username" @onchange="UpdateUsername" class="form-control my-2">
+        <option value="Charlie">Charlie</option>
+        <option value="John Green">John Green</option>
+        <option value="Stark Industries">Stark Industries</option>
+        <option value="Tobias">Tobias</option>
+        <option value="Nobody">Nobody</option>
+
+    </select>
+</div>
+
+<div>
+    <label for="products">Products:</label>
+    <ul>
+        @foreach (var product in products)
+        {
+            <li class="m-3">
+                @product
+                <button class="btn btn-primary" @onclick="() => AddToOrder(product)">Add to Order</button>
+            </li>
+        }
+    </ul>
+</div>
+
+@if (orderItems.Count >0 && selectedUsername.Length > 0)
+{
+    <div>
+        <h4>Order Summary</h4>
+        <p>Username: @selectedUsername</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in orderItems)
+                {
+                    <tr>
+                        <td>@item.Product</td>
+                        <td>
+                            <input type="number" @bind="item.Quantity" class="form-control my-2" />
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="() => RemoveFromOrder(item)">Remove</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="btn btn-primary" @onclick="SubmitOrder">Add to Order</button>
+
+    </div>
+}
+
+@code {
+    private List<string> products = new List<string> { "Rubber Duck", "Brick", "Gold Bar", "Planet", "Void" };
+    private List<OrderItem> orderItems = new List<OrderItem>();
+    private string selectedUsername = "";
+
+
+
+    void UpdateUsername(ChangeEventArgs e){
+        selectedUsername = e.Value.ToString();
+    }
+
+    private void AddToOrder(string product)
+    {
+        var existingItem = orderItems.FirstOrDefault(item => item.Product == product);
+        if (existingItem != null)
+        {
+            existingItem.Quantity++;
+        }
+        else
+        {
+            orderItems.Add(new OrderItem { Product = product });
+        }
+        StateHasChanged();
+    }
+
+    private void RemoveFromOrder(OrderItem item)
+    {
+        orderItems.Remove(item);
+    }
+
+    private async Task SubmitOrder(){
+        await service.SubmitOrder(orderItems, selectedUsername);
+        orderItems = [];
+
+    }
+}

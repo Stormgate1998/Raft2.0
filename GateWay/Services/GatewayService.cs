@@ -25,7 +25,7 @@
         Dictionary<int, string> nodes = nodes;
         private readonly ILogger<Gateway> logger = logger;
 
-        public string Leader {get; set; }
+        public string Leader { get; set; }
 
         public async Task<string> ReturnIdOfNodeAsync(string id)
         {
