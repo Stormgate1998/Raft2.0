@@ -20,15 +20,24 @@
 
 <div>
     <label for="products">Products:</label>
-    <ul>
-        @foreach (var product in products)
-        {
-            <li class="m-3">
-                @product
-                <button class="btn btn-primary" @onclick="() => AddToOrder(product)">Add to Order</button>
-            </li>
-        }
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td class="m-3">@product</td>
+                   <td> <button class="btn btn-primary" @onclick="() => AddToOrder(product)">Add to Order</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
 </div>
 
 @if (orderItems.Count >0 && selectedUsername.Length > 0)
@@ -50,7 +59,7 @@
                     <tr>
                         <td>@item.Product</td>
                         <td>
-                            <input type="number" @bind="item.Quantity" class="form-control my-2" />
+                            <input type="number" @bind="item.Quantity" class="form-control my-2" oninput="if(this.value < 0) this.value = 0;" />
                         </td>
                         <td>
                             <button class="btn btn-primary" @onclick="() => RemoveFromOrder(item)">Remove</button>
@@ -60,7 +69,7 @@
             </tbody>
         </table>
 
-        <button class="btn btn-primary" @onclick="SubmitOrder">Add to Order</button>
+        <button class="btn btn-primary" @onclick="SubmitOrder">Submit Order</button>
 
     </div>
 }

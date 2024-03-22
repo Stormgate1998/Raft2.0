@@ -171,7 +171,7 @@ public class ApiService
         else
         {
             // Parse the string of numbers separated by commas
-            var orderIds = pendingOrders.Item1.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            var orderIds = pendingOrders.Item1.Split('.', StringSplitOptions.RemoveEmptyEntries)
                                               .Select(int.Parse)
                                               .ToList();
 
@@ -185,7 +185,7 @@ public class ApiService
         }
 
         // Convert orderItems to a string in the specified format
-        var orderItemsString = string.Join(";", orderItems.Select(item => $"{item.Product},{item.Quantity}"));
+        var orderItemsString = string.Join(";", orderItems.Select(item => $"{item.Product}.{item.Quantity}"));
 
         // Make a call to AddToNode to submit the order
         await AddToLog($"order-id {orderId}", $"{selectedUsername}:{orderItemsString}");
@@ -195,8 +195,173 @@ public class ApiService
         }
         else
         {
-            await CompareVersionAndSwap("pending-orders", $"{pendingOrders.Item1},{orderId}", pendingOrders.Item2.ToString());
+            await CompareVersionAndSwap("pending-orders", $"{pendingOrders.Item1}.{orderId}", pendingOrders.Item2.ToString());
         }
+        await AddToLog($"order-status {orderId}", "pending");
+    }
+
+    public static (string username, List<OrderItem> orderItems) ParseOrderSubmission(string orderwithID)
+    {
+        string ordersubmission = orderwithID.Split(',')[0];
+        var parts = ordersubmission.Split(':');
+        if (parts.Length != 2)
+        {
+            throw new ArgumentException("Invalid order submission format. Expected format: username:orderItems");
+        }
+
+        var username = parts[0];
+        var orderItemsString = parts[1];
+        var orderItemStrings = orderItemsString.Split(';');
+        var orderItems = orderItemStrings.Select(itemString =>
+        {
+            var itemParts = itemString.Split('.');
+            if (itemParts.Length != 2)
+            {
+                throw new ArgumentException("Invalid order item format. Expected format: Product,Quantity");
+            }
+
+            var product = itemParts[0];
+            if (!int.TryParse(itemParts[1], out int quantity))
+            {
+                throw new ArgumentException("Invalid quantity format. Quantity must be a valid integer.");
+            }
+
+            return new OrderItem { Product = product, Quantity = quantity };
+        }).ToList();
+
+        return (username, orderItems);
+    }
+
+    public async Task<(string, int)> GetPendingOrders()
+    {
+        (string, int) orders = await StrongGet("pending-orders");
+        return orders;
+    }
+
+    public async Task<(string, string)> GetOrderInfo(string orderId)
+    {
+        string status = (await StrongGet($"order-status {orderId}")).Item1;
+        string orderlist = (await StrongGet($"order-id {orderId}")).Item1;
+        string username = orderlist.Split(':')[0];
+        return (status, username);
+    }
+
+    public async Task ProcessOrder(string orderId, Guid ProcessId)
+    {
+        var statusInfo = await StrongGet($"order-status {orderId}");
+        var orderInfo = await StrongGet($"order-id {orderId}");
+
+        //Get Username
+        string username;
+        List<OrderItem> orderList;
+        (username, orderList) = ParseOrderSubmission(orderInfo.Item1);
+        //get balance
+
+        int sum = orderList.Sum(item => item.Quantity);
+
+        int balanceId;
+        string balance;
+        (balance, balanceId) = await StrongGetBalance(username);
+        if (int.Parse(balance) < sum)
+        {
+            await RejectOrder(ProcessId, orderId);
+            return;
+        }
+        else
+        {
+            await ModifyBalance(username, sum * (-1));
+        }
+
+        List<OrderItem> processed = new();
+
+        foreach (var item in orderList)
+        {
+            var (amount, _) = await StrongGetStock(item.Product);
+            int quantity = int.Parse(amount);
+            if (quantity < item.Quantity)
+            {
+                await RejectOrder(ProcessId, orderId, username, sum, processed);
+                return;
+            }
+            else
+            {
+                processed.Add(item);
+                await ModifyStock(item.Product, item.Quantity * (-1));
+            }
+        }
+
+        var orderStatus = await StrongGet($"order-status {orderId}");
+        if (orderStatus.Item1 == "pending")
+        {
+            await CompareVersionAndSwap($"order-status {orderId}", $"processed-by {ProcessId}", orderStatus.Item2.ToString());
+            await RemoveFromPendingOrders(orderId);
+        }
+        else
+        {
+            await RejectOrder(ProcessId, orderId, username, sum, processed);
+        }
+
+
+
+    }
+
+    private async Task RejectOrder(Guid ProcessId, string orderId, string username = "", int sum = 0, List<OrderItem>? processed = null)
+    {
+        await RemoveFromPendingOrders(orderId);
+        var orderStatus = await StrongGet($"order-status {orderId}");
+        if (orderStatus.Item1 == "pending")
+        {
+
+            await CompareVersionAndSwap($"order-status {orderId}", $"rejected-by {ProcessId}", orderStatus.Item2.ToString());
+        }
+        if (sum > 0)
+        {
+            await ModifyBalance(username, sum);
+        }
+
+        if (processed != null && processed.Count > 0)
+        {
+            foreach (var item in processed)
+            {
+                await ModifyStock(item.Product, item.Quantity);
+            }
+        }
+    }
+
+    private async Task RemoveFromPendingOrders(string orderId)
+    {
+        (string, int) orders = await StrongGet("pending-orders");
+
+        string newString = RemoveTargetFromString(orders.Item1, orderId);
+
+        await CompareVersionAndSwap("pending-orders", newString, orders.Item2.ToString());
+
+    }
+
+    private static string RemoveTargetFromString(string inputString, string target)
+    {
+        // Split the input string by commas
+        string[] parts = inputString.Split('.');
+
+        // Remove the target value if it exists
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (parts[i] == target)
+            {
+                // Shift remaining elements to the left to fill the gap
+                for (int j = i; j < parts.Length - 1; j++)
+                {
+                    parts[j] = parts[j + 1];
+                }
+                // Resize the array to remove the last element
+                Array.Resize(ref parts, parts.Length - 1);
+                // Break after removing the target value
+                break;
+            }
+        }
+
+        // Join the remaining parts into a string
+        return string.Join(".", parts);
     }
 }
 public class LogObject(string key, string value)

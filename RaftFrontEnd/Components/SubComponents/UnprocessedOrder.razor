@@ -1,0 +1,36 @@
+﻿@using RaftFrontEnd.Services
+@inject ApiService service
+@rendermode InteractiveServer
+
+   <tr>
+        <td>@OrderId</td>
+        <td>@OrderStatus</td>
+        <td>@UsernameOfOrder</td>
+        <td>
+            <button class="btn btn-primary" @onclick="ProcessOrder">Process Order</button>
+        </td>
+    </tr>
+
+@code {
+    [Parameter]
+    public string OrderId { get; set; }
+
+    private string OrderStatus { get; set; }
+
+    private string UsernameOfOrder { get; set; }
+
+    Guid ProcessId;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProcessId = Guid.NewGuid();
+        (OrderStatus, UsernameOfOrder) = await service.GetOrderInfo(OrderId);
+    }
+
+    private async Task ProcessOrder()
+    {
+       await service.ProcessOrder(OrderId, ProcessId);
+    }
+
+}

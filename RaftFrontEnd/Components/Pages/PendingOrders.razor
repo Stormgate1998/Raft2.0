@@ -1,0 +1,39 @@
+@page "/pending"
+@using RaftFrontEnd.Components.SubComponents
+@using RaftFrontEnd.Services
+@inject ApiService service
+@rendermode InteractiveServer
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Order Id</th>
+            <th>Order Status</th>
+            <th>Username of Order</th>
+            <th></th> <!-- Empty column for the button -->
+        </tr>
+    </thead>
+    <tbody>
+    @if(pendingOrders.Count > 0){
+
+        @foreach(var item in pendingOrders)
+        {
+            <UnprocessedOrder OrderId=@item/>
+        }
+    }
+    </tbody>
+</table>
+
+
+
+@code{
+
+    List<string> pendingOrders = new();
+    int pendingOrdersId;
+    protected override async Task OnInitializedAsync()
+    {
+        (string,int) orders = await service.GetPendingOrders();
+        pendingOrders = orders.Item1.Split('.').ToList();
+        pendingOrdersId = orders.Item2;
+    }
+}
