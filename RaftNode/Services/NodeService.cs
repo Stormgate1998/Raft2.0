@@ -40,9 +40,9 @@ namespace RaftNode.Services
             string leader = "";
             // (term, leader, current) = ReadNumbersFromFile(LogFileName);
             Random random = new Random();
-            WaitTime = random.Next(1100, 2500);
+            WaitTime = random.Next(1500, 3500);
             ElectionCountdownTimer = new System.Timers.Timer(WaitTime);
-            HeartbeatTimer = new System.Timers.Timer(700)
+            HeartbeatTimer = new System.Timers.Timer(1000)
             {
                 AutoReset = true
             };
